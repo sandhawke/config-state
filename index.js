@@ -45,7 +45,7 @@ export function configFilename (options) {
 }
 
 export async function loadConfig (options = {}) {
-  if (!options.appName) options.appName = 'app'
+  if (!options.appName) options.appName = process.env.APPNAME || 'app'
   if (!options.env) options.env = ourEnv(options)
   
   const filename = configFilename(options)

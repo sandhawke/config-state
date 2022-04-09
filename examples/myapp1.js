@@ -1,4 +1,4 @@
-import {loadConfig} from 'config-state'
+import { loadConfig } from 'config-state'
 
 const config = loadConfig('myapp1')
 config.runCount = (config.runCount || 0) + 1

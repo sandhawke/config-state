@@ -38,14 +38,14 @@ export function configFilename (options) {
 }
 
 export function loadConfig (options = {}) {
-  if (typeof options === 'string') options = {appName: options}
+  if (typeof options === 'string') options = { appName: options }
   if (process.env.CONFIG_STATE_APPNAME) {
     options.appName = process.env.CONFIG_STATE_APPNAME
   }
   if (!options.appName) throw Error('config-state appname not provided')
-  
+
   if (!options.env) options.env = ourEnv(options)
-  
+
   const filename = configFilename(options)
   const env = options.env
   let text
@@ -70,8 +70,8 @@ export function loadConfig (options = {}) {
       throw Error(`file ${filename} has too lax permissions`)
     }
   }
-  
-  const obj = {...(options?.initialConfig || {})}
+
+  const obj = { ...(options?.initialConfig || {}) }
 
   if (text) {
     try {
@@ -83,7 +83,7 @@ export function loadConfig (options = {}) {
   }
 
   Object.assign(obj, env)
-  
+
   obj.configLocation = filename
 
   // this way, or saveConfig ??

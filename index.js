@@ -1,15 +1,9 @@
 import { homedir } from 'os'
-import * as fsprom from 'fs/promises'
+import * as fs from 'fs'
 import * as path from 'path'
+import dbg from 'debug'
 
-/*
-export function envPrefix (options) {
-  const appName = options?.appName || 'app'
-  const env = appName.toUpperCase() + '_CONFIG'
-  // console.log({env})
-  return env
-}
-*/
+const debug = dbg('config-state')
 
 export function ourEnv (options) {
   const prefix = options.appName.toUpperCase() + '_'
@@ -33,20 +27,17 @@ export function ourEnv (options) {
 }
 
 export function configFilename (options) {
+  if (options.configFile) return options.configFile
+  if (options.env.configfile) return options.env.configfile
   const s = options.configName || options.env.config || 'state'
   if (s.endsWith('.json')) return s
 
   const home = homedir()
-  // some question about whether to have this "config-state" segment
-  // here, but there might be a lot of them, and you might actually
-  // have other stuff in this dir that you want managed differently.
-  // const filename = path.join(home, '.config', options.appName, 'config-state', s) + '.json'
-
   const filename = path.join(home, '.config', options.appName, s) + '.json'
   return filename
 }
 
-export async function loadConfig (options = {}) {
+export function loadConfig (options = {}) {
   if (typeof options === 'string') options = {appName: options}
   if (process.env.CONFIG_STATE_APPNAME) {
     options.appName = process.env.CONFIG_STATE_APPNAME
@@ -61,12 +52,14 @@ export async function loadConfig (options = {}) {
   let create
   let stats
   try {
-    text = await fsprom.readFile(filename, 'utf8')
-    stats = await fsprom.stat(filename)
+    text = fs.readFileSync(filename, 'utf8')
+    stats = fs.statSync(filename)
+    debug('loaded from', filename)
   } catch (e) {
     if (e.code === 'ENOENT') {
       const dirname = path.dirname(filename)
-      await fsprom.mkdir(dirname, { recursive: true, mode: 0o700 })
+      fs.mkdirSync(dirname, { recursive: true, mode: 0o700 })
+      debug('mkdir', dirname)
       create = true
     } else {
       throw e
@@ -94,7 +87,10 @@ export async function loadConfig (options = {}) {
   obj.configLocation = filename
 
   // this way, or saveConfig ??
-  obj.save = async () => {
+  //
+  // also this is a pretty poor way to do it -- deleting stuff.
+  // Maybe we could use object inheritance or something.
+  obj.save = () => {
     const o2 = { ...obj }
     delete o2.configLocation
     delete o2.save
@@ -102,23 +98,16 @@ export async function loadConfig (options = {}) {
       // if the value is just what was in env, then DONT save it
       if (o2[k] === v) delete o2[k]
     }
-    await fsprom.writeFile(obj.configLocation, JSON.stringify(o2, null, 2) + '\n')
+    fs.writeFileSync(obj.configLocation, JSON.stringify(o2, null, 2) + '\n')
+    debug('wrote', filename)
   }
 
   if (create) {
-    await obj.save()
-    await fsprom.chmod(filename, 0o600)
+    debug('creating', filename)
+    obj.save()
+    fs.chmodSync(filename, 0o600)
   }
 
   // console.log('config %O', obj)
   return obj
 }
-
-/*
-export async function saveConfig (obj) {
-  if (!obj.configLocation) throw Error('invalid config object')
-  const o2 = { ...obj }
-  delete o2.configLocation
-  await fsprom.writeFile(obj.configLocation, JSON.stringify(o2, null, 2) + '\n')
-}
-*/

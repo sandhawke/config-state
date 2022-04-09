@@ -1,21 +1,25 @@
 #!/usr/bin/env node
 
-import {words} from 'clopt'
+import {words, options} from 'clopt'
 import {loadConfig} from './index.js'
 
 const [appName, op, field, value] = words
 
 if (!appName) usage()
 
-const config = await loadConfig(appName)
+const config = loadConfig(appName)
 
 switch (op) {
 case 'get':
-  console.log('config.%s = %o', field, config[field])
+  if (options.json) {
+    console.log(JSON.stringify(config[field]))
+  } else {
+    console.log('config.%s = %o', field, config[field])
+  }
   break
 case undefined:
 case 'list':
-  console.log('%O', config)
+  console.log('%s', JSON.stringify(config, null, 2))
   break
 case 'set':
   console.log('was config.%s = %o', field, config[field])

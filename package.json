@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Manage node.js app configs, with write-back and multiple configs per app",
   "main": "index.js",
+  "bin": "cli.js",
   "scripts": {
     "test": "npx standard && NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
     "jest": "NODE_OPTIONS=--experimental-vm-modules npx jest"

@@ -33,27 +33,36 @@ export function ourEnv (options) {
 }
 
 export function configFilename (options) {
-  const s = options.configName || options.env.config || 'main'
+  const s = options.configName || options.env.config || 'state'
   if (s.endsWith('.json')) return s
 
   const home = homedir()
   // some question about whether to have this "config-state" segment
   // here, but there might be a lot of them, and you might actually
   // have other stuff in this dir that you want managed differently.
-  const filename = path.join(home, '.config', options.appName, 'config-state', s) + '.json'
+  // const filename = path.join(home, '.config', options.appName, 'config-state', s) + '.json'
+
+  const filename = path.join(home, '.config', options.appName, s) + '.json'
   return filename
 }
 
 export async function loadConfig (options = {}) {
-  if (!options.appName) options.appName = process.env.APPNAME || 'app'
+  if (typeof options === 'string') options = {appName: options}
+  if (process.env.CONFIG_STATE_APPNAME) {
+    options.appName = process.env.CONFIG_STATE_APPNAME
+  }
+  if (!options.appName) throw Error('config-state appname not provided')
+  
   if (!options.env) options.env = ourEnv(options)
   
   const filename = configFilename(options)
-  const env = ourEnv(options)
+  const env = options.env
   let text
   let create
+  let stats
   try {
     text = await fsprom.readFile(filename, 'utf8')
+    stats = await fsprom.stat(filename)
   } catch (e) {
     if (e.code === 'ENOENT') {
       const dirname = path.dirname(filename)
@@ -63,7 +72,12 @@ export async function loadConfig (options = {}) {
       throw e
     }
   }
-
+  if (stats) {
+    if (stats.mode & 0o77) {
+      throw Error(`file ${filename} has too lax permissions`)
+    }
+  }
+  
   const obj = {...(options?.initialConfig || {})}
 
   if (text) {
@@ -91,7 +105,10 @@ export async function loadConfig (options = {}) {
     await fsprom.writeFile(obj.configLocation, JSON.stringify(o2, null, 2) + '\n')
   }
 
-  if (create) await obj.save()
+  if (create) {
+    await obj.save()
+    await fsprom.chmod(filename, 0o600)
+  }
 
   // console.log('config %O', obj)
   return obj

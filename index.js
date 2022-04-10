@@ -42,6 +42,8 @@ export function loadConfig (options = {}) {
   if (process.env.CONFIG_STATE_APPNAME) {
     options.appName = process.env.CONFIG_STATE_APPNAME
   }
+  // Maybe also APPNAME??
+  
   if (!options.appName) throw Error('config-state appname not provided')
 
   if (!options.env) options.env = ourEnv(options)

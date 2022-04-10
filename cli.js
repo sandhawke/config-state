@@ -2,41 +2,46 @@
 
 import { words, options } from 'clopt'
 import { loadConfig } from './index.js'
+import { get, set } from './jsonpath.js'
 
-const [appName, op, field, value] = words
+let appName = options.app || process.env.CONFIG_STATE_APPNAME
+const [op, key, value] = words
 
 if (!appName) usage()
 
 const config = loadConfig(appName)
 
+let was
+if (key) was = get(config, key)
+
 switch (op) {
-  case 'get':
-    if (options.json) {
-      console.log(JSON.stringify(config[field]))
-    } else {
-      console.log('config.%s = %o', field, config[field])
-    }
-    break
-  case undefined:
-  case 'list':
-    console.log('%s', JSON.stringify(config, null, 2))
-    break
-  case 'set':
-    console.log('was config.%s = %o', field, config[field])
-    config[field] = value
-    config.save()
-    console.log('now config.%s = %o', field, config[field])
-    break
-  default:
-    usage()
+case 'get':
+  if (options.json) {
+    console.log(JSON.stringify(was))
+  } else {
+    console.log('config.%s = %o', key, was)
+  }
+  break
+case undefined:
+case 'list':
+  console.log('%s', JSON.stringify(config, null, 2))
+  break
+case 'set':
+  console.log('was config.%s = %o', key, was)
+  set(config, key, value)
+  config.save()
+  console.log('now config.%s = %o', key, get(config, key))
+  break
+default:
+  usage()
 }
 
 function usage () {
-  console.error(`usage: config-state <app> <op> [field] [value]
+  console.error(`usage: config-state [--app <appname>] <op> [field] [value]
 
-app is your app name, .config/__here__
+ops: get, set, list (default)
 
-op is "get", "set", "list", ...
+--app may be omited if CONFIG_STATE_APPNAME is set
 `)
   process.exit(1)
 }

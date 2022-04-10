@@ -5,8 +5,7 @@
   "description": "Manage node.js app configs, with write-back and multiple configs per app",
   "main": "index.js",
   "bin": "cli.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sandhawke/config-state.git"
@@ -21,9 +20,6 @@
   },
   "homepage": "https://github.com/sandhawke/config-state#readme",
   "dependencies": {
-    "debug": "^4.3.1",
-    "clopt": "*"
-  },
-  "devDependencies": {
+    "debug": "^4.3.1"
   }
 }

@@ -104,6 +104,22 @@ export function loadConfig (options = {}) {
     debug('wrote', filename)
   }
 
+  obj.require = (key) => {
+    const value = obj[key]
+    if (value === undefined) {
+      console.error(`
+
+Missing configuration key %o
+
+Do something like:
+  config-state %s <some-value>
+
+`, key, key)
+    process.exit(1)
+    }
+    return value
+  }
+
   if (create) {
     debug('creating', filename)
     obj.save()

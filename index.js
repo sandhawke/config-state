@@ -29,7 +29,7 @@ export function ourEnv (options) {
 export function configFilename (options) {
   if (options.configFile) return options.configFile
   if (options.env.configfile) return options.env.configfile
-  const s = options.configName || options.env.config || 'state'
+  const s = options.configName || options.env.config || 'default'
   if (s.endsWith('.json')) return s
 
   const home = homedir()
@@ -112,7 +112,7 @@ export function loadConfig (options = {}) {
 Missing configuration key %o
 
 Do something like:
-  config-state %s <some-value>
+  site config %s=<some-value>
 
 `, key, key)
     process.exit(1)

@@ -27,7 +27,7 @@ case 'list':
   console.log('%s', JSON.stringify(config, null, 2))
   break
 case 'set':
-  console.log('was config.%s = %o', key, was)
+  console.log('was config.%s = %o', key, was, {value})
   set(config, key, value)
   config.save()
   console.log('now config.%s = %o', key, get(config, key))
